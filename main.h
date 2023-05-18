@@ -524,7 +524,6 @@ void Mesh::initSkyBoxBuffer(){
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
     // This might help with seams on some systems
-    //glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
     
     // Cycles through all the textures and attaches them to the cubemap object
     for (unsigned int i = 0; i < 6; i++){
