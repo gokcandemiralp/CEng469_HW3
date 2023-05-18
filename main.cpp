@@ -16,6 +16,8 @@ Scene scene = Scene(800, 600);
 Mesh skyBoxMesh(&scene,"objects/cube.obj",cubeMapDirs);;
 Mesh vehicleMesh = Mesh(&scene,"objects/plane.obj",
                               "textures/plane.jpg");
+Mesh groundSprite = Mesh(&scene,"objects/ground.obj",
+                             "textures/water.jpeg");
 
 void keyboard(GLFWwindow* window, int key, int scancode, int action, int mods){
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS){
@@ -58,8 +60,8 @@ void mouse(GLFWwindow* window, double xpos, double ypos){
     scene.mouseLastX = xpos;
     scene.mouseLastY = ypos;
 
-    xoffset *= scene.sensitivity;
-    yoffset *= scene.sensitivity;
+    xoffset *= scene.mouseSensitivity;
+    yoffset *= scene.mouseSensitivity;
     scene.yaw   += xoffset;
     scene.pitch += yoffset;
     
@@ -83,9 +85,11 @@ void init(){
     
     skyBoxMesh.initShader("shaders/skyboxVert.glsl","shaders/skyboxFrag.glsl");
     vehicleMesh.initShader("shaders/vehicleVert.glsl","shaders/vehicleFrag.glsl");
+    groundSprite.initShader("shaders/groundVert.glsl","shaders/groundFrag.glsl");
     
     skyBoxMesh.initSkyBoxBuffer();
-    vehicleMesh.initBuffer(6.0f, glm::vec3(0.0f,0.0f,0.0f));
+    vehicleMesh.initBuffer(6.0f, -scene.eyePos);
+    groundSprite.initBuffer(600.0f, glm::vec3(0.0f,0.0f,0.0f));
 }
 
 void display(){
@@ -94,6 +98,7 @@ void display(){
     
     if(cloudToggle){skyBoxMesh.renderCubeMap();}
     vehicleMesh.render();
+    groundSprite.render();
 }
 
 

@@ -113,16 +113,14 @@ class Scene{
     
     float mouseLastX,mouseLastY;
     float deltaTime,lastFrame;
-    float sensitivity;
-    float yaw,pitch;
+    float mouseSensitivity,rotationSensivity;
+    float roll,yaw,pitch;
     bool staticMouse;
     
     GLuint UBO;
     GLFWwindow* window;
     int gWidth, gHeight;
-    glm::vec3 movementOffset;
-    float eyeSpeedCoefficientZ;
-    float eyeSpeedCoefficientR;
+    float eyeSpeedCoefficient;
     float vehicleAngle;
     glm::vec3 eyePos;
     glm::vec3 eyeFront;
@@ -189,14 +187,15 @@ Scene::Scene(int inputWidth, int inputHeight){
     mouseLastY=gHeight/2;
     deltaTime = 0.0f;
     lastFrame = 0.0f;
-    sensitivity = 0.1;
-    yaw = -90.0f;
-    pitch = -5.0f;
+    mouseSensitivity = 0.1;
     staticMouse = true;
     
-    eyeSpeedCoefficientZ = 0.0f;
-    eyeSpeedCoefficientR = 0.0f;
-    movementOffset = glm::vec3(0.0f,0.0f,0.0f); // initial position
+    roll = 0.0f;
+    yaw = -90.0f;
+    pitch = -5.0f;
+    rotationSensivity = 0.5f;
+
+    eyeSpeedCoefficient = 0.0f;
     vehicleAngle = 0.0f;
     eyePos   = glm::vec3(0.0f, 4.0f,  12.0f);
     eyeFront = glm::vec3(0.0f, 0.0f, -1.0f);
@@ -269,34 +268,32 @@ void Scene::calculateFrameTime(){
 void Scene::movementKeys(GLFWwindow* window){
     int sign = 1;
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS){
-        eyeSpeedCoefficientZ = max(-1.0f,eyeSpeedCoefficientZ - (float)deltaTime);
+        eyeSpeedCoefficient = max(-10.0f,eyeSpeedCoefficient - (float)deltaTime);
     }
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS){
-        eyeSpeedCoefficientZ = min(1.0f,eyeSpeedCoefficientZ + (float)deltaTime);
+        eyeSpeedCoefficient = min(10.0f,eyeSpeedCoefficient + (float)deltaTime);
     }
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS){
-        eyeSpeedCoefficientR = eyeSpeedCoefficientR - (float)deltaTime;
+        roll += rotationSensivity;
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS){
-        eyeSpeedCoefficientR = eyeSpeedCoefficientR + (float)deltaTime;
+        roll -= rotationSensivity;
     }
     if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS){
-        // Q action
+        yaw += rotationSensivity;
     }
-    if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS){
-        // R action
+    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS){
+        yaw -= rotationSensivity;
     }
     if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS){
-        // U action
+        pitch += rotationSensivity;
     }
     if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS){
-        // J action
+        pitch -= rotationSensivity;
     }
-    (eyeSpeedCoefficientZ > 0) ? sign = -1 : sign = 1;
-    movementOffset += glm::vec3(glm::sin(glm::radians(vehicleAngle)),0.0f,-glm::cos(glm::radians(vehicleAngle))) * eyeSpeedCoefficientZ * (0.1f);
-    vehicleAngle += eyeSpeedCoefficientR * sign * (0.5f);
-    eyeSpeedCoefficientZ /= 1.01;
-    eyeSpeedCoefficientR /= 1.01;
+    (eyeSpeedCoefficient > 0) ? sign = -1 : sign = 1;
+    eyePos -= glm::vec3(glm::sin(glm::radians(vehicleAngle)),0.0f,-glm::cos(glm::radians(vehicleAngle))) * eyeSpeedCoefficient * (0.1f);
+    eyeSpeedCoefficient /= 1.01;
 }
 
 void Scene::initWindowShape(){
@@ -574,13 +571,14 @@ void Mesh::render(){
     if(isVehicle) {
         glm::mat4 matR1 = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f,0.0f,0.0f));
         glm::mat4 matR2 = glm::rotate(glm::mat4(1.0f), glm::radians(180.0f), glm::vec3(0.0f,1.0f,0.0f));
+        matT = glm::translate(glm::mat4(1.0f), positionOffset + scene->eyePos);
         matS = glm::scale(glm::mat4(1.f), glm::vec3(scaleFactor ,scaleFactor ,scaleFactor));
-        modelingMatrix = matR1 *  matR2 * matS;
+        modelingMatrix = matT * matR1 * matR2 * matS;
     }
     else{
         matR = glm::rotate(glm::mat4(1.0f), glm::radians(scene->vehicleAngle), glm::vec3(0.0f,1.0f,0.0f));
         matS = glm::scale(glm::mat4(1.f), glm::vec3(scaleFactor ,scaleFactor ,scaleFactor));
-        matT = glm::translate(glm::mat4(1.0f), positionOffset + scene->movementOffset);
+        matT = glm::translate(glm::mat4(1.0f), positionOffset);
         modelingMatrix = matR * matT * matS;
     }
     
