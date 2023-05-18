@@ -286,6 +286,12 @@ void Scene::movementKeys(GLFWwindow* window){
     if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS){
         // R action
     }
+    if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS){
+        // U action
+    }
+    if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS){
+        // J action
+    }
     (eyeSpeedCoefficientZ > 0) ? sign = -1 : sign = 1;
     movementOffset += glm::vec3(glm::sin(glm::radians(vehicleAngle)),0.0f,-glm::cos(glm::radians(vehicleAngle))) * eyeSpeedCoefficientZ * (0.1f);
     vehicleAngle += eyeSpeedCoefficientR * sign * (0.5f);

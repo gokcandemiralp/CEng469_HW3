@@ -1,6 +1,8 @@
 #include "main.h"
 
 bool isWireframe = false;
+bool cloudToggle = true;
+
 string cubeMapDirs[6] ={
     "textures/right.jpg",
     "textures/left.jpg",
@@ -38,6 +40,11 @@ void keyboard(GLFWwindow* window, int key, int scancode, int action, int mods){
             glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
             cout << "KEY_L PRESSED : Wireframe Mode is OFF \n";
         }
+    }
+    else if(key == GLFW_KEY_T && action == GLFW_PRESS){
+        cloudToggle = !cloudToggle;
+        if(cloudToggle){cout << "KEY_T PRESSED : Clouds are Toggled ON \n";}
+        else{cout << "KEY_T PRESSED : Clouds are Toggled OFF \n";}
     }
 }
 
@@ -85,7 +92,7 @@ void display(){
     scene.eyeFront = glm::normalize(scene.calculateDirection(scene.yaw,scene.pitch));
     scene.lookAt();
     
-    skyBoxMesh.renderCubeMap();
+    if(cloudToggle){skyBoxMesh.renderCubeMap();}
     vehicleMesh.render();
 }
 
