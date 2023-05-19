@@ -58,17 +58,16 @@ void init(){
     groundSprite.initShader("shaders/groundVert.glsl","shaders/groundFrag.glsl");
     
     skyBoxMesh.initSkyBoxBuffer();
-    vehicleMesh.initBuffer(6.0f, -scene.eyePos);
+    vehicleMesh.initBuffer(6.0f, glm::vec3(0.0f,0.0f,0.0f));
     groundSprite.initBuffer(600.0f, glm::vec3(0.0f,0.0f,0.0f));
 }
 
 void display(){
     scene.lookAt();
-    scene.calculateDirection();
     
     if(cloudToggle){skyBoxMesh.renderCubeMap();}
     vehicleMesh.render();
-    //groundSprite.render();
+    groundSprite.render();
 }
 
 

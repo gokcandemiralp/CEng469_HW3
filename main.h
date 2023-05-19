@@ -112,7 +112,6 @@ class Scene{
     
     float deltaTime,lastFrame;
     float rotationSensivity;
-    float roll,yaw,pitch;
     
     GLuint UBO;
     GLFWwindow* window;
@@ -120,8 +119,9 @@ class Scene{
     float eyeSpeedCoefficient;
     float vehicleAngle;
     glm::vec3 eyePos;
-    glm::vec3 eyeFront;
-    glm::vec3 eyeUp;
+    glm::vec3 eyeFront,eyeUp,eyeSide;
+    
+    glm::mat4 orientationMatrix;
     
     int MeshCount;
     vector<Mesh*> Meshs;
@@ -182,17 +182,13 @@ Scene::Scene(int inputWidth, int inputHeight){
     MeshCount = 0;
     deltaTime = 0.0f;
     lastFrame = 0.0f;
-    
-    roll = 0.0f;
-    yaw = 0.0f;
-    pitch = 0.0f;
-    rotationSensivity = 0.5f;
 
+    rotationSensivity = 0.5f;
     eyeSpeedCoefficient = 0.0f;
-    vehicleAngle = 0.0f;
     eyePos   = glm::vec3(0.0f, 4.0f,  12.0f);
     eyeFront = glm::vec3(0.0f, 0.0f, -1.0f);
     eyeUp    = glm::vec3(0.0f, 1.0f,  0.0f);
+    eyeSide  = glm::vec3(1.0f, 0.0f,  0.0f);
     
     if (!glfwInit()){
         exit(-1);
@@ -243,12 +239,7 @@ void Scene::renderWithoutVehicle(){
 }
 
 void Scene::calculateDirection(){
-    glm::quat quatPitch = glm::quat(cos(glm::radians(pitch)/2),sin(glm::radians(pitch)/2),0.0f,0.0f);
-    glm::quat quatYaw = glm::quat(cos(glm::radians(yaw)/2),0.0f,sin(glm::radians(yaw)/2),0.0f);
-    glm::quat quatRoll = glm::quat(cos(glm::radians(roll)/2),0.0f,0.0f,sin(glm::radians(roll)/2));
-    glm::mat4 matR = glm::toMat4(quatPitch) * glm::toMat4(quatYaw) * glm::toMat4(quatRoll);
-    eyeFront = matR * glm::vec4(0.0f,0.0f,-1.0f,1.0f);
-    eyeUp = matR * glm::vec4(0.0f,1.0f,0.0f,1.0f);
+    // empty for now
 }
 
 void Scene::calculateFrameTime(){
@@ -259,6 +250,10 @@ void Scene::calculateFrameTime(){
 
 void Scene::movementKeys(GLFWwindow* window){
     int sign = 1;
+    glm::quat quatRoll = glm::quat(1.0f,0.0f,0.0f,0.0f);
+    glm::quat quatYaw = glm::quat(1.0f,0.0f,0.0f,0.0f);
+    glm::quat quatPitch = glm::quat(1.0f,0.0f,0.0f,0.0f);
+    
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS){
         eyeSpeedCoefficient = max(-10.0f,eyeSpeedCoefficient - (float)deltaTime);
     }
@@ -266,25 +261,31 @@ void Scene::movementKeys(GLFWwindow* window){
         eyeSpeedCoefficient = min(10.0f,eyeSpeedCoefficient + (float)deltaTime);
     }
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS){
-        roll += rotationSensivity;
+        quatRoll = glm::quat(cos(glm::radians(-rotationSensivity)/2),eyeFront*sin(glm::radians(-rotationSensivity)/2));
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS){
-        roll -= rotationSensivity;
+        quatRoll = glm::quat(cos(glm::radians(rotationSensivity)/2),eyeFront*sin(glm::radians(rotationSensivity)/2));
     }
     if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS){
-        yaw += rotationSensivity;
+        quatYaw = glm::quat(cos(glm::radians(rotationSensivity)/2),eyeUp*sin(glm::radians(rotationSensivity)/2));
     }
     if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS){
-        yaw -= rotationSensivity;
+        quatYaw = glm::quat(cos(glm::radians(-rotationSensivity)/2),eyeUp*sin(glm::radians(-rotationSensivity)/2));
     }
     if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS){
-        pitch += rotationSensivity;
+        quatPitch = glm::quat(cos(glm::radians(rotationSensivity)/2),eyeSide*sin(glm::radians(rotationSensivity)/2));
     }
     if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS){
-        pitch -= rotationSensivity;
+        quatPitch = glm::quat(cos(glm::radians(-rotationSensivity)/2),eyeSide*sin(glm::radians(-rotationSensivity)/2));;
     }
+    
+    orientationMatrix = glm::toMat4(quatPitch) * glm::toMat4(quatYaw) * glm::toMat4(quatRoll);
+    eyeFront = glm::normalize(glm::vec3(orientationMatrix * glm::vec4(eyeFront,1.0f)));
+    eyeUp    = glm::normalize(glm::vec3(orientationMatrix * glm::vec4(eyeUp   ,1.0f)));
+    eyeSide  = glm::normalize(glm::cross(eyeFront,eyeUp));
+    
     (eyeSpeedCoefficient > 0) ? sign = -1 : sign = 1;
-    eyePos -= glm::vec3(glm::sin(glm::radians(vehicleAngle)),0.0f,-glm::cos(glm::radians(vehicleAngle))) * eyeSpeedCoefficient * (0.1f);
+    eyePos -= eyeFront * eyeSpeedCoefficient * (0.1f);
     eyeSpeedCoefficient /= 1.01;
 }
 
@@ -561,13 +562,11 @@ void Mesh::render(){
     glUseProgram(gProgram);
     
     if(isVehicle) {
-        //glm::quat quatPitch = glm::quat(cos(glm::radians(scene->pitch)/2),sin(glm::radians(scene->pitch)/2),0.0f,0.0f);
-        //glm::quat quatYaw = glm::quat(cos(glm::radians(scene->yaw)/2),0.0f,sin(glm::radians(scene->yaw)/2),0.0f);
-        //glm::quat quatRoll = glm::quat(cos(glm::radians(scene->roll)/2),0.0f,0.0f,sin(glm::radians(scene->roll)/2));
-        //matR = glm::toMat4(quatPitch) * glm::toMat4(quatYaw) * glm::toMat4(quatRoll);
-        matT = glm::translate(glm::mat4(1.0f), positionOffset + scene->eyePos);
+        glm::mat4 matT1 = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -4.0f,  -12.0f));
+        glm::mat4 matT2 = glm::translate(glm::mat4(1.0f), scene->eyePos);
+        //matT = glm::translate(glm::mat4(1.0f), positionOffset);
         matS = glm::scale(glm::mat4(1.f), glm::vec3(scaleFactor ,scaleFactor ,scaleFactor));
-        modelingMatrix = matT * matS;
+        modelingMatrix = matT2 * scene->orientationMatrix * matT1 * matS;
     }
     else{
         matR = glm::rotate(glm::mat4(1.0f), glm::radians(scene->vehicleAngle), glm::vec3(0.0f,1.0f,0.0f));
