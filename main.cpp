@@ -87,16 +87,20 @@ void init(){
     vehicleMesh.initShader("shaders/vehicleVert.glsl","shaders/vehicleFrag.glsl");
     groundSprite.initShader("shaders/groundVert.glsl","shaders/groundFrag.glsl");
     
-    //skyBoxMesh.initSkyBoxBuffer();
+    skyBoxMesh.initSkyBoxBuffer();
     vehicleMesh.initBuffer(6.0f, -scene.eyePos);
-    //groundSprite.initBuffer(600.0f, glm::vec3(0.0f,0.0f,0.0f));
+    groundSprite.initBuffer(600.0f, glm::vec3(0.0f,0.0f,0.0f));
+    
+    //scene.eyeFront = glm::normalize(scene.calculateDirection(scene.yaw,scene.pitch));
+    scene.pitch = 0.0f;
+    scene.yaw = 0.0f;
 }
 
 void display(){
-    scene.eyeFront = glm::normalize(scene.calculateDirection(scene.yaw,scene.pitch));
+    //scene.eyeFront = glm::normalize(scene.calculateDirection(scene.yaw,scene.pitch));
     scene.lookAt();
     
-    //if(cloudToggle){skyBoxMesh.renderCubeMap();}
+    if(cloudToggle){skyBoxMesh.renderCubeMap();}
     vehicleMesh.render();
     //groundSprite.render();
 }

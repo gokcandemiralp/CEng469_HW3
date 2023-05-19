@@ -16,6 +16,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 #define FAST_OBJ_IMPLEMENTATION
 #include "fast_obj.h"
@@ -25,9 +27,6 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
-
-//#include <glm/gtc/quaternion.hpp>
-//#include <glm/gtx/quaternion.hpp>
 
 using namespace std;
 using namespace tinyobj;
@@ -191,8 +190,8 @@ Scene::Scene(int inputWidth, int inputHeight){
     staticMouse = true;
     
     roll = 0.0f;
-    yaw = -90.0f;
-    pitch = -5.0f;
+    yaw = 0.0f;
+    pitch = 0.0f;
     rotationSensivity = 0.5f;
 
     eyeSpeedCoefficient = 0.0f;
@@ -441,17 +440,6 @@ void Mesh::initBuffer(float scaleFactorInput, glm::vec3 positionOffsetInput){
     texCoordEntries = model->position_count * 2;
     faceEntries = model->face_count * 3;
     
-    glm::mat4 matR1 = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f,0.0f,0.0f));
-    glm::mat4 matR2 = glm::rotate(glm::mat4(1.0f), glm::radians(180.0f), glm::vec3(0.0f,1.0f,0.0f));
-    glm::mat4 tempModellingMatrix = matR1 * matR2;
-    for(int i = 0 ; i<model->position_count ; ++i ){
-        glm::vec4 tempVec = glm::vec4(model->positions[3*i],model->positions[3*i+1],model->positions[3*i+2],1.0f);
-        tempVec = tempVec * tempModellingMatrix;
-        cout << "v " << tempVec.x << " ";
-        cout << tempVec.y << " ";
-        cout << tempVec.z << "\n";
-    }
-    
     vertexDataSize = vertexEntries * sizeof(GLfloat);
     indexDataSize = faceEntries * sizeof(GLuint);
     
@@ -580,15 +568,19 @@ void Mesh::render(){
     glUseProgram(gProgram);
     
     if(isVehicle) {
+        glm::quat quatPitch = glm::quat(cos(glm::radians(scene->pitch)/2),sin(glm::radians(scene->pitch)/2),0.0f,0.0f);
+        glm::quat quatYaw = glm::quat(cos(glm::radians(scene->yaw)/2),0.0f,sin(glm::radians(scene->yaw)/2),0.0f);
+        glm::quat quatRoll = glm::quat(cos(glm::radians(scene->roll)/2),0.0f,0.0f,sin(glm::radians(scene->roll)/2));
+        matR = glm::toMat4(quatPitch) * glm::toMat4(quatYaw) * glm::toMat4(quatRoll);
         matT = glm::translate(glm::mat4(1.0f), positionOffset + scene->eyePos);
         matS = glm::scale(glm::mat4(1.f), glm::vec3(scaleFactor ,scaleFactor ,scaleFactor));
-        modelingMatrix = matT * matS;
+        modelingMatrix = matT * matS * matR;
     }
     else{
         matR = glm::rotate(glm::mat4(1.0f), glm::radians(scene->vehicleAngle), glm::vec3(0.0f,1.0f,0.0f));
         matS = glm::scale(glm::mat4(1.f), glm::vec3(scaleFactor ,scaleFactor ,scaleFactor));
         matT = glm::translate(glm::mat4(1.0f), positionOffset);
-        modelingMatrix = matR * matT * matS;
+        modelingMatrix = matT * matS * matR;
     }
     
     glActiveTexture(GL_TEXTURE1);
