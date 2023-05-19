@@ -21,11 +21,8 @@ layout(location=0) in vec3 inVertex;
 layout(location=1) in vec3 inNormal;
 layout(location=2) in vec2 inTexCoord;
 
-out vec3 Position;
 out vec4 specular;
-out vec3 Normal;
 out vec2 TexCoord;
-out vec4 refEyePosition;
 
 void main(void)
 {
@@ -42,11 +39,7 @@ void main(void)
     vec3 specularColor = I * ks * pow(max(0, NdotH), 100);
 
     specular = vec4(specularColor, 1);
-    Normal = mat3(transpose(inverse(modelingMatrix))) * inNormal;
-    refEyePosition = vec4(eyePos,1);
     TexCoord = inTexCoord;
-
-    Position = vec3(modelingMatrix * vec4(inVertex, 1.0));
     gl_Position = projectionMatrix * viewingMatrix * modelingMatrix * vec4(inVertex, 1.0);
 }
 
