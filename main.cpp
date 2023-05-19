@@ -23,15 +23,6 @@ void keyboard(GLFWwindow* window, int key, int scancode, int action, int mods){
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS){
         glfwSetWindowShouldClose(window, GLFW_TRUE);
     }
-    else if(key == GLFW_KEY_F && action == GLFW_PRESS){
-        scene.staticMouse = !scene.staticMouse;
-        cout << "KEY_F PRESSED : Free Cam ON \n";
-        if(scene.staticMouse){
-            cout << "KEY_F PRESSED : Free Cam OFF \n";
-            scene.eyePos = glm::vec3(0.0f, 4.0f,  12.0f);
-            scene.eyeFront = glm::normalize(scene.calculateDirection(-90.0f,-5.0f));
-        }
-    }
     else if(key == GLFW_KEY_L && action == GLFW_PRESS){
         isWireframe = !isWireframe;
         if(isWireframe){
@@ -48,27 +39,6 @@ void keyboard(GLFWwindow* window, int key, int scancode, int action, int mods){
         if(cloudToggle){cout << "KEY_T PRESSED : Clouds are Toggled ON \n";}
         else{cout << "KEY_T PRESSED : Clouds are Toggled OFF \n";}
     }
-}
-
-void mouse(GLFWwindow* window, double xpos, double ypos){
-    if(scene.staticMouse){
-        return;
-    }
-    
-    float xoffset = xpos - scene.mouseLastX;
-    float yoffset = scene.mouseLastY - ypos; // reversed since y-coordinates range from bottom to top
-    scene.mouseLastX = xpos;
-    scene.mouseLastY = ypos;
-
-    xoffset *= scene.mouseSensitivity;
-    yoffset *= scene.mouseSensitivity;
-    scene.yaw   += xoffset;
-    scene.pitch += yoffset;
-    
-    if(scene.pitch > 89.0f)
-        scene.pitch = 89.0f;
-    if(scene.pitch < -89.0f)
-        scene.pitch = -89.0f;
 }
 
 void cleanBuffers(){
@@ -90,15 +60,11 @@ void init(){
     skyBoxMesh.initSkyBoxBuffer();
     vehicleMesh.initBuffer(6.0f, -scene.eyePos);
     groundSprite.initBuffer(600.0f, glm::vec3(0.0f,0.0f,0.0f));
-    
-    //scene.eyeFront = glm::normalize(scene.calculateDirection(scene.yaw,scene.pitch));
-    scene.pitch = 0.0f;
-    scene.yaw = 0.0f;
 }
 
 void display(){
-    //scene.eyeFront = glm::normalize(scene.calculateDirection(scene.yaw,scene.pitch));
     scene.lookAt();
+    scene.calculateDirection();
     
     if(cloudToggle){skyBoxMesh.renderCubeMap();}
     vehicleMesh.render();
@@ -123,7 +89,6 @@ int main(int argc, char** argv){
     
     glfwSetInputMode(scene.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     glfwSetKeyCallback(scene.window, keyboard);
-    glfwSetCursorPosCallback(scene.window, mouse);
     
     cout << "PRESS ESC TO EXIT \n";
     mainLoop(scene.window); // this does not return unless the window is closed

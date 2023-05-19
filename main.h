@@ -110,11 +110,9 @@ class Mesh;
 class Scene{
     public:
     
-    float mouseLastX,mouseLastY;
     float deltaTime,lastFrame;
-    float mouseSensitivity,rotationSensivity;
+    float rotationSensivity;
     float roll,yaw,pitch;
-    bool staticMouse;
     
     GLuint UBO;
     GLFWwindow* window;
@@ -131,7 +129,7 @@ class Scene{
     Scene();
     Scene(int inputWidth, int inputHeight);
     void renderWithoutVehicle();
-    glm::vec3 calculateDirection(float inputYaw, float inputPitch);
+    void calculateDirection();
     void calculateFrameTime();
     void movementKeys(GLFWwindow* window);
     void initWindowShape();
@@ -182,12 +180,8 @@ Scene::Scene(int inputWidth, int inputHeight){
     gWidth = inputWidth;
     gHeight = inputHeight;
     MeshCount = 0;
-    mouseLastX=gWidth/2;
-    mouseLastY=gHeight/2;
     deltaTime = 0.0f;
     lastFrame = 0.0f;
-    mouseSensitivity = 0.1;
-    staticMouse = true;
     
     roll = 0.0f;
     yaw = 0.0f;
@@ -248,14 +242,13 @@ void Scene::renderWithoutVehicle(){
     Meshs[4]->render();
 }
 
-glm::vec3 Scene::calculateDirection(float inputYaw, float inputPitch){
-    glm::vec3 direction;
-    yaw = inputYaw;
-    pitch = inputPitch;
-    direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-    direction.y = sin(glm::radians(pitch));
-    direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-    return direction;
+void Scene::calculateDirection(){
+    glm::quat quatPitch = glm::quat(cos(glm::radians(pitch)/2),sin(glm::radians(pitch)/2),0.0f,0.0f);
+    glm::quat quatYaw = glm::quat(cos(glm::radians(yaw)/2),0.0f,sin(glm::radians(yaw)/2),0.0f);
+    glm::quat quatRoll = glm::quat(cos(glm::radians(roll)/2),0.0f,0.0f,sin(glm::radians(roll)/2));
+    glm::mat4 matR = glm::toMat4(quatPitch) * glm::toMat4(quatYaw) * glm::toMat4(quatRoll);
+    eyeFront = matR * glm::vec4(0.0f,0.0f,-1.0f,1.0f);
+    eyeUp = matR * glm::vec4(0.0f,1.0f,0.0f,1.0f);
 }
 
 void Scene::calculateFrameTime(){
@@ -568,13 +561,13 @@ void Mesh::render(){
     glUseProgram(gProgram);
     
     if(isVehicle) {
-        glm::quat quatPitch = glm::quat(cos(glm::radians(scene->pitch)/2),sin(glm::radians(scene->pitch)/2),0.0f,0.0f);
-        glm::quat quatYaw = glm::quat(cos(glm::radians(scene->yaw)/2),0.0f,sin(glm::radians(scene->yaw)/2),0.0f);
-        glm::quat quatRoll = glm::quat(cos(glm::radians(scene->roll)/2),0.0f,0.0f,sin(glm::radians(scene->roll)/2));
-        matR = glm::toMat4(quatPitch) * glm::toMat4(quatYaw) * glm::toMat4(quatRoll);
+        //glm::quat quatPitch = glm::quat(cos(glm::radians(scene->pitch)/2),sin(glm::radians(scene->pitch)/2),0.0f,0.0f);
+        //glm::quat quatYaw = glm::quat(cos(glm::radians(scene->yaw)/2),0.0f,sin(glm::radians(scene->yaw)/2),0.0f);
+        //glm::quat quatRoll = glm::quat(cos(glm::radians(scene->roll)/2),0.0f,0.0f,sin(glm::radians(scene->roll)/2));
+        //matR = glm::toMat4(quatPitch) * glm::toMat4(quatYaw) * glm::toMat4(quatRoll);
         matT = glm::translate(glm::mat4(1.0f), positionOffset + scene->eyePos);
         matS = glm::scale(glm::mat4(1.f), glm::vec3(scaleFactor ,scaleFactor ,scaleFactor));
-        modelingMatrix = matT * matS * matR;
+        modelingMatrix = matT * matS;
     }
     else{
         matR = glm::rotate(glm::mat4(1.0f), glm::radians(scene->vehicleAngle), glm::vec3(0.0f,1.0f,0.0f));
