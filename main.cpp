@@ -16,7 +16,9 @@ Scene scene = Scene(800, 600);
 Mesh skyBoxMesh(&scene,"objects/cube.obj",cubeMapDirs);
 Mesh vehicleMesh = Mesh(&scene,"objects/airplane.obj",
                               "textures/airplane.jpg");
-Mesh groundSprite = Mesh(&scene,"objects/ground.obj",
+Mesh groundMesh = Mesh(&scene,"objects/ground.obj",
+                             "textures/water.jpeg");
+Mesh cloudMesh = Mesh(&scene,"objects/cloud.obj",
                              "textures/water.jpeg");
 
 void keyboard(GLFWwindow* window, int key, int scancode, int action, int mods){
@@ -50,16 +52,22 @@ void cleanBuffers(){
 
 void init(){
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    
     scene.initWindowShape();
     vehicleMesh.isVehicle = true;
+    cloudMesh.isVehicle = true;;
     
     skyBoxMesh.initShader("shaders/skyboxVert.glsl","shaders/skyboxFrag.glsl");
     vehicleMesh.initShader("shaders/vehicleVert.glsl","shaders/vehicleFrag.glsl");
-    groundSprite.initShader("shaders/groundVert.glsl","shaders/groundFrag.glsl");
+    groundMesh.initShader("shaders/groundVert.glsl","shaders/groundFrag.glsl");
+    cloudMesh.initShader("shaders/cloudVert.glsl","shaders/cloudFrag.glsl");
     
     skyBoxMesh.initSkyBoxBuffer();
     vehicleMesh.initBuffer(6.0f, glm::vec3(0.0f,0.0f,0.0f));
-    groundSprite.initBuffer(600.0f, glm::vec3(0.0f,0.0f,0.0f));
+    groundMesh.initBuffer(600.0f, glm::vec3(0.0f,0.0f,0.0f));
+    cloudMesh.initBuffer(20.0f, glm::vec3(0.0f,0.0f,0.0f));
 }
 
 void display(){
@@ -67,7 +75,8 @@ void display(){
     
     if(cloudToggle){skyBoxMesh.renderCubeMap();}
     vehicleMesh.render();
-    groundSprite.render();
+    groundMesh.render();
+    cloudMesh.render();
 }
 
 
