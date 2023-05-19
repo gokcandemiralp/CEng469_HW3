@@ -576,11 +576,10 @@ void Mesh::render(){
     glUseProgram(gProgram);
     
     if(isVehicle) {
-        glm::mat4 matT1 = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -4.0f,  -12.0f));
-        glm::mat4 matT2 = glm::translate(glm::mat4(1.0f), scene->eyePos);
+        matT = glm::translate(glm::mat4(1.0f), scene->eyePos);
         //matT = glm::translate(glm::mat4(1.0f), positionOffset);
         matS = glm::scale(glm::mat4(1.f), glm::vec3(scaleFactor ,scaleFactor ,scaleFactor));
-        modelingMatrix = matT2 * scene->vehicleOrientationMatrix * matS;
+        modelingMatrix = matT * scene->vehicleOrientationMatrix * matS;
     }
     else{
         matR = glm::rotate(glm::mat4(1.0f), glm::radians(scene->vehicleAngle), glm::vec3(0.0f,1.0f,0.0f));
