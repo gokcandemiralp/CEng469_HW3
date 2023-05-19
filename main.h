@@ -122,6 +122,7 @@ class Scene{
     glm::vec3 eyeFront,eyeUp,eyeSide;
     
     glm::mat4 orientationMatrix;
+    glm::mat4 vehicleOrientationMatrix;
     
     int MeshCount;
     vector<Mesh*> Meshs;
@@ -185,6 +186,7 @@ Scene::Scene(int inputWidth, int inputHeight){
 
     rotationSensivity = 0.5f;
     eyeSpeedCoefficient = 0.0f;
+    vehicleOrientationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -4.0f,  -12.0f));
     eyePos   = glm::vec3(0.0f, 4.0f,  12.0f);
     eyeFront = glm::vec3(0.0f, 0.0f, -1.0f);
     eyeUp    = glm::vec3(0.0f, 1.0f,  0.0f);
@@ -279,6 +281,10 @@ void Scene::movementKeys(GLFWwindow* window){
         quatPitch = glm::quat(cos(glm::radians(-rotationSensivity)/2),eyeSide*sin(glm::radians(-rotationSensivity)/2));;
     }
     
+    //quatRoll = glm::quat(cos(glm::radians(-rotationSensivity)/2),eyeFront*sin(glm::radians(-rotationSensivity)/2));
+    //quatYaw = glm::quat(cos(glm::radians(rotationSensivity)/2),eyeUp*sin(glm::radians(rotationSensivity)/2));
+    //quatPitch = glm::quat(cos(glm::radians(rotationSensivity)/2),eyeSide*sin(glm::radians(rotationSensivity)/2));
+    
     orientationMatrix = glm::toMat4(quatPitch) * glm::toMat4(quatYaw) * glm::toMat4(quatRoll);
     eyeFront = glm::normalize(glm::vec3(orientationMatrix * glm::vec4(eyeFront,1.0f)));
     eyeUp    = glm::normalize(glm::vec3(orientationMatrix * glm::vec4(eyeUp   ,1.0f)));
@@ -286,6 +292,9 @@ void Scene::movementKeys(GLFWwindow* window){
     
     (eyeSpeedCoefficient > 0) ? sign = -1 : sign = 1;
     eyePos -= eyeFront * eyeSpeedCoefficient * (0.1f);
+    vehicleOrientationMatrix = glm::toMat4(quatPitch) * glm::toMat4(quatYaw) * glm::toMat4(quatRoll) * vehicleOrientationMatrix;
+    
+    // Bleed off Speeds
     eyeSpeedCoefficient /= 1.01;
 }
 
@@ -566,7 +575,7 @@ void Mesh::render(){
         glm::mat4 matT2 = glm::translate(glm::mat4(1.0f), scene->eyePos);
         //matT = glm::translate(glm::mat4(1.0f), positionOffset);
         matS = glm::scale(glm::mat4(1.f), glm::vec3(scaleFactor ,scaleFactor ,scaleFactor));
-        modelingMatrix = matT2 * scene->orientationMatrix * matT1 * matS;
+        modelingMatrix = matT2 * scene->vehicleOrientationMatrix * matS;
     }
     else{
         matR = glm::rotate(glm::mat4(1.0f), glm::radians(scene->vehicleAngle), glm::vec3(0.0f,1.0f,0.0f));
