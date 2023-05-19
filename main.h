@@ -441,6 +441,17 @@ void Mesh::initBuffer(float scaleFactorInput, glm::vec3 positionOffsetInput){
     texCoordEntries = model->position_count * 2;
     faceEntries = model->face_count * 3;
     
+    glm::mat4 matR1 = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f,0.0f,0.0f));
+    glm::mat4 matR2 = glm::rotate(glm::mat4(1.0f), glm::radians(180.0f), glm::vec3(0.0f,1.0f,0.0f));
+    glm::mat4 tempModellingMatrix = matR1 * matR2;
+    for(int i = 0 ; i<model->position_count ; ++i ){
+        glm::vec4 tempVec = glm::vec4(model->positions[3*i],model->positions[3*i+1],model->positions[3*i+2],1.0f);
+        tempVec = tempVec * tempModellingMatrix;
+        cout << "v " << tempVec.x << " ";
+        cout << tempVec.y << " ";
+        cout << tempVec.z << "\n";
+    }
+    
     vertexDataSize = vertexEntries * sizeof(GLfloat);
     indexDataSize = faceEntries * sizeof(GLuint);
     
@@ -569,11 +580,9 @@ void Mesh::render(){
     glUseProgram(gProgram);
     
     if(isVehicle) {
-        glm::mat4 matR1 = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f,0.0f,0.0f));
-        glm::mat4 matR2 = glm::rotate(glm::mat4(1.0f), glm::radians(180.0f), glm::vec3(0.0f,1.0f,0.0f));
         matT = glm::translate(glm::mat4(1.0f), positionOffset + scene->eyePos);
         matS = glm::scale(glm::mat4(1.f), glm::vec3(scaleFactor ,scaleFactor ,scaleFactor));
-        modelingMatrix = matT * matR1 * matR2 * matS;
+        modelingMatrix = matT * matS;
     }
     else{
         matR = glm::rotate(glm::mat4(1.0f), glm::radians(scene->vehicleAngle), glm::vec3(0.0f,1.0f,0.0f));
