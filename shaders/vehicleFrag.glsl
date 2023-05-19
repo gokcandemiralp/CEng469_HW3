@@ -2,6 +2,7 @@
 
 in vec2 TexCoord;
 in vec4 specular;
+in vec4 diffuse;
 
 layout (std140) uniform Matrices{
     mat4 projectionMatrix;
@@ -13,5 +14,6 @@ out vec4 fragColor;
 uniform sampler2D sampler;
 
 void main(void){
-    fragColor = texture(sampler, TexCoord) + specular;
+    vec4 diffuseModifier = diffuse/2 + vec4(0.5,0.5,0.5,1);
+    fragColor = texture(sampler, TexCoord)*diffuseModifier + specular;
 }

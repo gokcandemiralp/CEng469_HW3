@@ -13,9 +13,9 @@ string cubeMapDirs[6] ={
 };
 Scene scene = Scene(800, 600);
 
-Mesh skyBoxMesh(&scene,"objects/cube.obj",cubeMapDirs);;
-Mesh vehicleMesh = Mesh(&scene,"objects/plane.obj",
-                              "textures/plane.jpg");
+Mesh skyBoxMesh(&scene,"objects/cube.obj",cubeMapDirs);
+Mesh vehicleMesh = Mesh(&scene,"objects/airplane.obj",
+                              "textures/airplane.jpg");
 Mesh groundSprite = Mesh(&scene,"objects/ground.obj",
                              "textures/water.jpeg");
 
