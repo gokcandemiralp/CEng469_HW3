@@ -72,11 +72,11 @@ void init(){
 
 void display(){
     scene.lookAt();
-    
-    if(cloudToggle){skyBoxMesh.renderCubeMap();}
+
+    skyBoxMesh.renderCubeMap();
     vehicleMesh.render();
     groundMesh.render();
-    cloudMesh.render();
+    if(cloudToggle){cloudMesh.render();}
 }
 
 
