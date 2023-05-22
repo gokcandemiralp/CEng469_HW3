@@ -88,7 +88,7 @@ void display(){
 
     skyBoxMesh.renderCubeMap();
     vehicleMesh.render();
-    //groundMesh.render();
+    groundMesh.render();
     if(cloudToggle){cloudMesh.render();}
 }
 
