@@ -113,6 +113,9 @@ class Scene{
     float deltaTime,lastFrame;
     float rotationSensivity;
     
+    bool showFPS;
+    int rayMarchSteps;
+    
     GLuint UBO;
     GLFWwindow* window;
     int gWidth, gHeight;
@@ -193,6 +196,9 @@ Scene::Scene(int inputWidth, int inputHeight){
     eyeUp    = glm::vec3(0.0f, 1.0f,  0.0f);
     eyeSide  = glm::vec3(1.0f, 0.0f,  0.0f);
     
+    showFPS = false;
+    rayMarchSteps = 100;
+    
     if (!glfwInit()){
         exit(-1);
     }
@@ -249,6 +255,7 @@ void Scene::calculateFrameTime(){
     float currentFrame = glfwGetTime();
     deltaTime = currentFrame - lastFrame;
     lastFrame = currentFrame;
+    if(showFPS){cout << "FPS:" << 1/deltaTime << "\n";}
 }
 
 void Scene::movementKeys(GLFWwindow* window){
@@ -577,7 +584,7 @@ void Mesh::render(){
     
     if(isVehicle) {
         matT = glm::translate(glm::mat4(1.0f), scene->eyePos);
-        //matT = glm::translate(glm::mat4(1.0f), positionOffset);
+        glUniform1i(glGetUniformLocation(gProgram, "rayMarchSteps"), scene->rayMarchSteps);
         matS = glm::scale(glm::mat4(1.f), glm::vec3(scaleFactor ,scaleFactor ,scaleFactor));
         modelingMatrix = matT * scene->vehicleOrientationMatrix * matS;
     }

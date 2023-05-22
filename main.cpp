@@ -41,6 +41,19 @@ void keyboard(GLFWwindow* window, int key, int scancode, int action, int mods){
         if(cloudToggle){cout << "KEY_T PRESSED : Clouds are Toggled ON \n";}
         else{cout << "KEY_T PRESSED : Clouds are Toggled OFF \n";}
     }
+    else if(key == GLFW_KEY_F && action == GLFW_PRESS){
+        scene.showFPS = !scene.showFPS;
+        if(scene.showFPS){cout << "KEY_F PRESSED : FPS counter Toggled ON \n";}
+        else{cout << "KEY_F PRESSED : FPS counter Toggled OFF \n";}
+    }
+    else if (key == GLFW_KEY_Z){
+        if(scene.rayMarchSteps > 1) {--scene.rayMarchSteps;}
+        cout << "KEY_Z PRESSED : Ray March Step Count" << scene.rayMarchSteps << "\n";
+    }
+    else if (key == GLFW_KEY_X){
+        if(scene.rayMarchSteps < 200) {++scene.rayMarchSteps;}
+        cout << "KEY_X PRESSED : Ray March Step Count" << scene.rayMarchSteps << "\n";
+    }
 }
 
 void cleanBuffers(){
