@@ -105,10 +105,7 @@ void mainLoop(GLFWwindow* window){
 }
 
 int main(int argc, char** argv){
-    
     init();
-    
-    glfwSetInputMode(scene.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     glfwSetKeyCallback(scene.window, keyboard);
     
     cout << "PRESS ESC TO EXIT \n";
