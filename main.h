@@ -197,7 +197,7 @@ Scene::Scene(int inputWidth, int inputHeight){
     eyeSide  = glm::vec3(1.0f, 0.0f,  0.0f);
     
     showFPS = false;
-    rayMarchSteps = 100;
+    rayMarchSteps = 50;
     
     if (!glfwInit()){
         exit(-1);
